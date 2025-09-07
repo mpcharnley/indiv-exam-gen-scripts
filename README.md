@@ -3,6 +3,8 @@ Scripts (written in Python) to help instructors generate individualized exams fo
 
 # Work is still in progress
 
+ExamGeneration_v1 is the main file that builds the GUI and calls all other files.
+
 ## Parts that work
 - Modified TeX file generation
 - Individual Exam Generation
