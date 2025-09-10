@@ -356,5 +356,6 @@ def modifiedExamGeneration(examFileName, numVersions, numVersionsPerSec, section
             dataRow = generateRandomStudent(topicHeaders, secList, verList)
             sheet.append(dataRow)
         
-        wb.save('TemplateDatafor'+examFileName + '.xlsx')
-        tkmb.askokcancel('Generation Complete', 'Modified exam and template spreadsheet made successfully.\n\nExam is FILE NAME HERE.\n\nSpreadsheet is FILE NAME HERE.')
+        os.chdir(examFileName[:examFileName.rindex('/')])
+        wb.save('TemplateDatafor'+examFileName[examFileName.rindex('/')+1:] + '.xlsx')
+        tkmb.showinfo('Generation Complete', 'Modified exam and template spreadsheet made successfully.\n\nExam is ' + os.path(fileOut)+'.\n\nSpreadsheet is ' + os.path.join(examFileName[:examFileName.rindex('/')],'TemplateDatafor'+examFileName[examFileName.rindex('/')+1:] + '.xlsx') +'.')

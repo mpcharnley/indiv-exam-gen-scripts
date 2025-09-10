@@ -6,6 +6,7 @@ import datetime
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.filedialog as tkfd
+import tkfilebrowser
 import tkinter.messagebox as tkmb
 import random
 import openpyxl
@@ -13,11 +14,14 @@ import string
 import shutil
 from pypdf import PdfWriter, PdfReader
 import pandas as pd
-import modifiedTeXMethods as MT
+import modifiedTexMethods as MT
 import individualExamMethods as IE
 import scannedExamMethods as SE
 
-
+scanDirs = []
+indivStudentDataPath = ''
+examTeXFilePath = ''
+output_path = ''
 
 def resetAllWindows():
     wd_Database.withdraw()
@@ -31,31 +35,32 @@ def resetAllWindows():
 def databaseReader():
     root.withdraw()
     wd_Database.deiconify()
-    print("Database Reader")
+    #print("Database Reader")
     wd_Database.protocol("WM_DELETE_WINDOW", resetAllWindows)
 
 def texModifier():
     root.withdraw()
     wd_TexMod.deiconify()
-    print("TeX Exam Modifier")
+    #print("TeX Exam Modifier")
     wd_TexMod.protocol("WM_DELETE_WINDOW", resetAllWindows)
 
 def probSelection():
     root.withdraw()
     wd_ProbGen.deiconify()
-    print("Problem Selection Generator")
+    #print("Problem Selection Generator")
     wd_ProbGen.protocol("WM_DELETE_WINDOW", resetAllWindows)
 
 def individualExams():
     root.withdraw()
     wd_IndivEx.deiconify()
-    print("Individual Exam Generation")
+    indivStudentBoxes()
+    #print("Individual Exam Generation")
     wd_IndivEx.protocol("WM_DELETE_WINDOW", resetAllWindows)
 
 def scannedExams():
     root.withdraw()
     wd_Scanned.deiconify()
-    print("Scanned Exam Processing")
+    #print("Scanned Exam Processing")
     wd_Scanned.protocol("WM_DELETE_WINDOW", resetAllWindows)
 
 def open_File_TM():
@@ -68,9 +73,10 @@ def open_File_TM():
             with open(file_path,'r') as file:
                 content = file.read()
                 lbl_tm_fileSelect["text"] = file_name
-                lbl_tm_fileDir["text"] = dir_path
                 os.chdir(dir_path)
                 bool_hasFile = True
+                global examTeXFilePath
+                examTeXFilePath = file_path
         except Exception as e:
             tkmb.showerror("Error", f"Could not read file {e}")
 
@@ -84,9 +90,10 @@ def open_Exam_IE():
             with open(file_path,'r') as file:
                 content = file.read()
                 lbl_ie_fileSelect["text"] = file_name
-                lbl_ie_fileDir["text"] = dir_path
                 os.chdir(dir_path)
                 bool_hasFile = True
+                global examTeXFilePath
+                examTeXFilePath = file_path
         except Exception as e:
             tkmb.showerror("Error", f"Could not read file {e}")
 
@@ -100,18 +107,23 @@ def open_Exam_IE_STU():
             with open(file_path,'r', encoding='latin-1') as file:
                 content = file.read()
                 lbl_ie_stuListSelect["text"] = file_name
-                lbl_ie_stuListDir["text"] = dir_path
                 os.chdir(dir_path)
                 bool_hasFile = True
+                global indivStudentDataPath
+                indivStudentDataPath = file_path
+            dF = pd.read_excel(file_path)
+            ie_secNames.set(', '.join(dF['Section'].unique()))
+            ie_versNames.set(', '.join(dF['Version'].unique()))
         except Exception as e:
             tkmb.showerror("Error", f"Could not read file {e}")
 
 def open_Output_IE():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = tkfd.askdirectory(title="Select an output directory for exam files:", initialdir=dir_path)
-    if file_path:
-        output_path, file_name = os.path.split(file_path)
-        lbl_ie_dirSelect["text"] = file_name
+    global output_path
+    output_path = tkfd.askdirectory(title="Select an output directory for exam files:", initialdir=dir_path)
+    if output_path:
+        _, lastFolder = os.path.split(output_path)
+        lbl_ie_dirSelect["text"] = lastFolder
         lbl_ie_outputDir["text"] = output_path
 
 def fileReqs_TM():
@@ -124,8 +136,9 @@ def modifiedExamGeneration():
 
     os.chdir(dir_path)
 
-    examFileName = lbl_tm_fileSelect["text"]
-    examFileName = examFileName[:-4]
+    #examFileName = lbl_tm_fileSelect["text"]
+    #examFileName = examFileName[:-4]
+    examFileName = examTeXFilePath[:examTeXFilePath.rindex('.')]
     numVersions = int(tm_numProbsSelected.get())
     numVersionsPerSec = int(tm_numVerSelected.get())
     sectionNames = ent_tm_sections.get()
@@ -143,15 +156,17 @@ def individualExamGeneration():
 
     # Data pulled in as inputs:
 
-    examFileName = lbl_ie_fileSelect["text"][:lbl_ie_fileSelect["text"].rindex('.')]
+    #examFileName = lbl_ie_fileSelect["text"][:lbl_ie_fileSelect["text"].rindex('.')]
+    examFileName = examTeXFilePath[:examTeXFilePath.rindex('.')]
     makeIndiv = bool_ie_students.get()
-    studentDataFile = lbl_ie_stuListSelect["text"][:lbl_ie_stuListSelect["text"].rindex('.')]
+    #studentDataFile = lbl_ie_stuListSelect["text"][:lbl_ie_stuListSelect["text"].rindex('.')]
+    studentDataFile = indivStudentDataPath
     numVersions = int(ie_numVersSelected.get())
     sectionNames = ent_ie_sectionNames.get()
     secList = [s.strip() for s in sectionNames.split(',')]
     versionTitles = ent_ie_versNames.get()
     verList = [s.strip() for s in versionTitles.split(',')]
-    outputFolder = os.path.join(lbl_ie_outputDir["text"] ,  lbl_ie_dirSelect["text"])
+    outputFolder = output_path
 
     blankFullExam = bool_ie_blankExam.get()
     makeSolutions = bool_ie_makeSolns.get()
@@ -170,7 +185,52 @@ def indivStudentBoxes():
         btn_ie_stuListFile.config(state = tk.DISABLED)
 
 
+def open_Dirs_Scan():
+    global scanDirs
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    scanDirs = tkfilebrowser.askopendirnames(title = "Choose Directories that contain Scans", initialdir=dir_path)
+    if len(scanDirs) == 0:
+        lbl_scan_dirList["text"] = "No Directories Selected"
+    else:
+        strText = ""
+        for s in scanDirs:
+            h, tail = os.path.split(s)
+            _, prevTail = os.path.split(h)
+            strText = strText + os.path.join(prevTail, tail) + '\n'
+        lbl_scan_dirList["text"] = strText
 
+def open_Stu_Scan():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = tkfd.askopenfilename(title="Select a file", filetypes=[ ["Excel Files", "*.xlsx"], ["All Files", "*.*"]], initialdir=dir_path)
+
+    if file_path:
+        dir_path, file_name = os.path.split(file_path)
+        try:
+            with open(file_path,'r', encoding='latin-1') as file:
+                content = file.read()
+                lbl_scan_stuDataFile["text"] = file_name
+                lbl_ie_stuListDir["text"] = dir_path
+                os.chdir(dir_path)
+                bool_hasFile = True
+                global indivStudentDataPath
+                indivStudentDataPath = file_path
+        except Exception as e:
+            tkmb.showerror("Error", f"Could not read file {e}")
+
+
+def scannedExamProcessing():
+    if len(indivStudentDataPath) == 0:
+        tkmb.showerror("Error", "No student data file provided.")
+    elif len(scanDirs) == 0:
+        tkmb.showerror("Error", "No scan directories provided.")
+    else:
+        studentDataFile = indivStudentDataPath
+        numPagesBF = int(scan_numBeforeFirst.get())
+        numPagesAL = int(scan_numAfterLast.get())
+        nameLineText = ent_scan_nameText.get()
+        
+
+        SE.scannedExamProcessing(scanDirs, studentDataFile, numPagesBF, numPagesAL, nameLineText)
 
 
 
@@ -183,11 +243,11 @@ root.title("Exam Generation Home Screen")
 frm_root = ttk.Frame(root, padding = 10)
 frm_root.grid()
 
-ttk.Button(frm_root, text = "Database Reader", command = databaseReader, padding = 10).grid(column=0, row = 0, sticky="EW")
-ttk.Button(frm_root, text = "TeX Exam Modifier", command = texModifier, padding = 10).grid(column=0, row = 1, sticky="EW")
-ttk.Button(frm_root, text = "Problem Selection Generator", command = probSelection, padding = 10).grid(column=0, row = 2, sticky="EW")
-ttk.Button(frm_root, text = "Individual Exam Generation", command = individualExams, padding = 10).grid(column=0, row = 3, sticky="EW")
-ttk.Button(frm_root, text = "Scanned Exam Processing", command = scannedExams, padding = 10).grid(column=0, row = 4, sticky="EW")
+#ttk.Button(frm_root, text = "Database Reader", command = databaseReader, padding = 10).grid(column=0, row = 0, sticky="EW")
+ttk.Button(frm_root, text = "TeX Exam Modifier", command = texModifier, padding = 10).grid(column=0, row = 0, sticky="EW")
+#ttk.Button(frm_root, text = "Problem Selection Generator", command = probSelection, padding = 10).grid(column=0, row = 2, sticky="EW")
+ttk.Button(frm_root, text = "Individual Exam Generation", command = individualExams, padding = 10).grid(column=0, row = 1, sticky="EW")
+ttk.Button(frm_root, text = "Scanned Exam Processing", command = scannedExams, padding = 10).grid(column=0, row = 2, sticky="EW")
 
 
 wd_Database = tk.Toplevel(root)
@@ -265,9 +325,13 @@ ie_numVersSelected.set("2")
 ie_comboBox_Vers = ttk.Combobox(frm_indiv, textvariable=ie_numVersSelected, values=ie_numOptions, state = "readonly")
 lbl_ie_vers = ttk.Label(frm_indiv, text = "How many versions of each problem are in the exam?", justify=tk.CENTER, padding = 10)
 lbl_ie_sectionNames = ttk.Label(frm_indiv, text = "What are the names of each of the sections? Enter as a comma-separated list.", justify=tk.CENTER, padding = 10)
-ent_ie_sectionNames = ttk.Entry(frm_indiv)
+ie_secNames = tk.StringVar()
+ie_secNames.set("")
+ent_ie_sectionNames = ttk.Entry(frm_indiv, textvariable=ie_secNames)
 lbl_ie_versNames = ttk.Label(frm_indiv, text = "What name do you want to use for the different versions of the exam? Enter as a comma-separated list.", justify=tk.CENTER, padding = 10)
-ent_ie_versNames = ttk.Entry(frm_indiv)
+ie_versNames = tk.StringVar()
+ie_versNames.set("")
+ent_ie_versNames = ttk.Entry(frm_indiv, textvariable=ie_versNames)
 lbl_ie_dirSelect = ttk.Label(frm_indiv, text="No Output Directory Selected", justify=tk.CENTER, padding = 10)
 btn_ie_outputDir = ttk.Button(frm_indiv, text = "Select Output Directory", command=open_Output_IE, padding = 10)
 lbl_ie_outputDir = ttk.Label(frm_indiv, text="", width=10)
@@ -320,6 +384,38 @@ wd_Scanned.title("Scanned Exam Processing")
 frm_scan = ttk.Frame(wd_Scanned, padding = 10)
 frm_scan.grid()
 wd_Scanned.withdraw()
+
+lbl_scan_dirList = ttk.Label(frm_scan, text = "No Directories Selected", justify=tk.CENTER, padding = 10)
+lbl_scan_stuDataFile = ttk.Label(frm_scan, text = "No Student Data Provided", justify = tk.CENTER, padding = 10)
+scan_numOptions = [0, 1, 2, 3, 4, 5, 6]
+scan_numBeforeFirst = tk.StringVar()
+scan_numBeforeFirst.set("2")
+scan_numAfterLast = tk.StringVar()
+scan_numAfterLast.set("2")
+dD_scan_BF = ttk.Combobox(frm_scan, textvariable=scan_numBeforeFirst, values=scan_numOptions, state = "readonly")
+dD_scan_AL = ttk.Combobox(frm_scan, textvariable=scan_numAfterLast, values=scan_numOptions, state = "readonly")
+lbl_scan_BF = ttk.Label(frm_scan, text="How many pages (including the title) are before the first problem?")
+lbl_scan_AL = ttk.Label(frm_scan, text="How many pages are after the last problem?")
+lbl_scan_nameLine = ttk.Label(frm_scan, text="What text appears on the page right before the student's name?")
+scan_nameText = tk.StringVar()
+scan_nameText.set("Name:")
+ent_scan_nameText = ttk.Entry(frm_scan, textvariable=scan_nameText)
+btn_scan_selectDirs = ttk.Button(frm_scan, text = "Select Directories that contain scans.", command = open_Dirs_Scan, padding = 10)
+btn_scan_selectStu = ttk.Button(frm_scan, text = "Select Individualized Student Data File.", command = open_Stu_Scan, padding = 10)
+btn_scan_run = ttk.Button(frm_scan, text = "Process the Scans!", command = scannedExamProcessing, padding = 10)
+
+lbl_scan_dirList.grid(column=0, row=1, rowspan = 4)
+lbl_scan_stuDataFile.grid(column = 0, row = 0)
+btn_scan_selectStu.grid(column=1, row= 0)
+btn_scan_selectDirs.grid(column=1, row = 1)
+lbl_scan_BF.grid(column = 1, row = 2)
+lbl_scan_AL.grid(column = 1, row = 3)
+lbl_scan_nameLine.grid(column = 1, row = 4)
+dD_scan_BF.grid(column = 2, row = 2)
+dD_scan_AL.grid(column = 2, row = 3)
+ent_scan_nameText.grid(column = 2, row = 4)
+btn_scan_run.grid(column = 1, row = 5, columnspan=2)
+
 
 
 root.mainloop()

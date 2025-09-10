@@ -1,0 +1,345 @@
+\documentclass[addpoints,11pt]{exam}
+
+
+%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%
+% Commands below added by the Individual Exam Generation Script
+% Only edit if you know what you are doing.
+% Matt Charnley, 2025
+\usepackage{etoolbox}
+\usepackage{xstring}
+\newtoggle{showTO}
+\newtoggle{showTT}
+\newtoggle{showRO}
+\newtoggle{showDF}
+\newtoggle{showAll}
+\newcommand{\IndivExamUntitled}[6]{
+#2
+\IfStrEq{\versionPattern}{Z}
+{
+\question #3\question #4\question #5\question #6}{}
+\IfStrEq{\versionPattern}{A}
+{\question #3}{}
+\IfStrEq{\versionPattern}{B}
+{\question #4}{}
+\IfStrEq{\versionPattern}{C}
+{\question #5}{}
+\IfStrEq{\versionPattern}{D}
+{\question #6}{}
+}
+
+\makeatletter
+\newcommand{\modGradeTable}{
+\def\tbl@range{AllQs}%
+\if@addpoints
+\@ifundefined{exam@numpoints}%
+{\ClassWarning{exam}%
+{%
+You must run LaTeX again to produce the
+table.\MessageBreak
+}%
+\fbox{Run \LaTeX{} again to produce the table}%
+}%
+{\@ifundefined{range@\tbl@range @firstq}%
+{\range@undefined}%
+{%
+\@ifundefined{range@\tbl@range @lastq}%
+{\range@undefined}%
+{%
+\edef\tbl@firstq{\csname range@\tbl@range @firstq\endcsname}%
+\edef\tbl@lastq{\csname range@\tbl@range @lastq\endcsname}%
+% Do not print table if firstq after lastq, i.e., if there are no questions:
+\ifnum \tbl@firstq > \tbl@lastq\relax%
+{}
+\else%
+\ifnum \numquestions < 10
+\multicolumnpartialpointtable{1}{AllQs}[questions]
+\else
+\ifnum \numquestions > 18
+\multicolumnpartialpointtable{3}{AllQs}[questions]
+\else
+\multicolumnpartialpointtable{2}{AllQs}[questions]
+\fi
+\fi
+\fi
+}
+}
+}
+\fi
+}
+\makeatother
+\providecommand{\versionPattern}{Z}
+\providecommand{\secNum}{}
+\providecommand{\versNum}{}
+\providecommand{\stuName}{}
+%\toggletrue{showAll}% Uncomment the line above to show all problems, and add values into the above parameters to test what the individual exam will look like.
+
+% End of additional commands.
+%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%*%
+
+
+\providecommand{\versNum}{A}
+\providecommand{\stuName}{NAME HERE}
+\providecommand{\secNum}{1-3}
+
+\usepackage{amsmath,lastpage,graphicx}
+\usepackage{esvect} % for vector arrows
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{arrows,shapes,positioning}
+\usetikzlibrary{decorations.markings}
+
+\usepackage{array}
+\usepackage{wasysym}
+\usepackage{enumerate}
+
+\geometry{
+right=1.1in,
+left=1.1in,
+bottom=1.25in,
+top=0.95in
+}
+
+\bracketedpoints % option to make points bracketed
+
+\def\apro{\rightarrow}
+\def\ds{\displaystyle}
+
+\firstpageheader{\bf MATH XXX, Midterm Exam \#1, October 3, 2023}{}{\large 80 minutes}
+\runningheader{}{\small Version \versNum \phantom{XXXX} \hfill Math XXX Midterm Exam \#1\hfill Page \thepage}{\smallskip\hrule\vspace{-.2in} }
+\firstpagefooter{}{}{Version \versNum}
+\runningfooter{}{}{}
+%\firstpagefooter{}{}{}
+%\runningfooter{}{}{}
+
+\pointpoints{pt}{pts}
+\marginpointname{ \points}
+\pointsinmargin
+
+\usepackage{array}
+
+\begin{document}
+%\noindent {\large\bf MATH 666, Midterm Exam \#3, November 14, 2021 \hfill \rm 80 minutes}
+
+\phantom{X}
+
+\centerline{
+\begin{tabular}{|l@{\rule{0pt}{0pt}}l|ll@{\rule{0pt}{0pt}}l|}
+\hline
+& \multicolumn{3}{l} {\begin{tabular}{l} \\ \\ {\Large Name:$\,$\underline{\makebox[5in][l]{\stuName}}}\\ \phantom{X}\end{tabular}}
+& \\
+\hline
+& \begin{tabular}{l} 
+\\  \Large Lecturer:$\,$\rule{2.75in}{0.75pt}
+\end{tabular}
+&& \begin{tabular}{l} \\  \\ {\Large Section:}  $\,$\underline{\makebox[0.8in][l]{\secNum}} \\ \end{tabular} & \\
+\hline
+& \multicolumn{3}{l} { \begin{tabular}{l} \begin{tabular}{p{.8\textwidth}}\\[-8pt]{\it On my honor, I have neither received nor given any unauthorized assistance on this examination.} \end{tabular} \\ \\ \hspace{1in} {\Large Signature$\,$\rule{3.5in}{0.75pt}} \phantom{X}\\\end{tabular} } & \\
+\hline
+\end{tabular}
+}
+
+\begin{small}
+\bigskip
+
+\centerline{\underline{\bf Instructions}}
+\begin{enumerate}
+\item Look at both sides of each sheet of paper. Questions are printed on the front and back.
+
+\item This exam is closed book. Calculators, electronic devices, notes, books, formula sheets , and other outside materials are not allowed. Phones must be turned off and put away.
+
+\item This is a really complicated title page! You can put whatever you want here, and it will not be touched by the modification program.
+
+\item The only thing that will make the scan processing easier is if the name blank is the only (or at least last) thing on it's line.
+\end{enumerate}
+
+\end{small}
+\bigskip\bigskip
+
+\modGradeTable
+\newpage
+\begin{questions}
+
+\begingradingrange{AllQs}
+
+%**T1**%
+\ifboolexpr{ togl {showAll} or togl {showTO}}{%
+\IndivExamUntitled{T1}{}%
+{[5] Topic 1 Problem 1
+\newpage
+
+}%
+{[5] Topic 1 Problem 2
+\newpage
+
+}%
+{[5] Topic 1 Problem 2
+\newpage
+
+}%
+{[5] Topic 1 Problem 1
+\newpage
+
+}%
+
+}{}%
+%**T2**%
+\ifboolexpr{ togl {showAll} or togl {showTT}}{%
+\IndivExamUntitled{T2}{}%
+{[10] Topic 2a Problem 1
+\newpage
+
+}%
+{[10] Topic 2a Problem 2
+\newpage
+
+}%
+{[10] Topic 2a Problem 1
+\newpage
+
+}%
+{[10] Topic 2a Problem 2
+\newpage
+
+}%
+
+}{}%
+%**T2**%
+\ifboolexpr{ togl {showAll} or togl {showTT}}{%
+\IndivExamUntitled{T2}{}%
+{[10] Topic 2b Problem 2
+\newpage
+
+}%
+{[10] Topic 2b Problem 1
+\newpage
+
+}%
+{[10] Topic 2b Problem 2
+\newpage
+
+}%
+{[10] Topic 2b Problem 1
+\newpage
+
+}%
+
+}{}%
+%**R1**%
+\ifboolexpr{ togl {showAll} or togl {showRO}}{%
+\IndivExamUntitled{R1}{}%
+{[15] Topic R1a Problem 1
+\newpage
+
+}%
+{[15] Topic R1a Problem 2
+\newpage
+
+}%
+{[15] Topic R1a Problem 1
+\newpage
+
+}%
+{[15] Topic R1a Problem 2
+\newpage
+
+}%
+
+}{}%
+%**R1**%
+\ifboolexpr{ togl {showAll} or togl {showRO}}{%
+\IndivExamUntitled{R1}{}%
+{[15] Topic R1b Problem 1
+\newpage
+
+}%
+{[15] Topic R1b Problem 2
+\newpage
+
+}%
+{[15] Topic R1b Problem 1
+\newpage
+
+}%
+{[15] Topic R1b Problem 2
+\newpage
+
+}%
+
+}{}%
+%**R1**%
+\ifboolexpr{ togl {showAll} or togl {showRO}}{%
+\IndivExamUntitled{R1}{}%
+{[15] Topic R1c Problem 1
+\newpage
+
+}%
+{[15] Topic R1c Problem 2
+\newpage
+
+}%
+{[15] Topic R1c Problem 1
+\newpage
+
+}%
+{[15] Topic R1c Problem 2
+\newpage
+
+}%
+
+}{}%
+%**R1**%
+\ifboolexpr{ togl {showAll} or togl {showRO}}{%
+\IndivExamUntitled{R1}{}%
+{[15] Topic R1d Problem 1
+\newpage
+
+}%
+{[15] Topic R1d Problem 2
+\newpage
+
+}%
+{[15] Topic R1d Problem 2
+\newpage
+
+}%
+{[15] Topic R1d Problem 1
+\newpage
+
+}%
+
+}{}%
+%**D4**%
+\ifboolexpr{ togl {showAll} or togl {showDF}}{%
+\IndivExamUntitled{D4}{}%
+{[30] Topic D4 Problem 1
+\newpage
+
+}%
+{[30] Topic D4 Problem 2
+\newpage
+}%
+{[30] Topic D4 Problem 1
+\newpage
+
+}%
+{[30] Topic D4 Problem 2
+\newpage
+}%
+
+}{}%
+\endgradingrange{AllQs}
+\qformat{\hfill This page is left blank for additional work \hfill}
+\ifprintanswers
+\else
+\question
+\newpage
+\question
+%\newpage
+%\question
+\fi
+\end{questions}
+
+
+\end{document}

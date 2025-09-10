@@ -15,11 +15,12 @@ from pypdf import PdfWriter, PdfReader
 import pandas as pd
 
 
-def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersions,secList, verList, outputFolder, blankFullExam, makeSolutions, combinedPDFs, makeScanDirect, sectionSubfolders):
+def individualExamGeneration(examPath, makeIndiv, studentDataFile,numVersions,secList, verList, outputFolder, blankFullExam, makeSolutions, combinedPDFs, makeScanDirect, sectionSubfolders):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-
     os.chdir(dir_path)
-
+    examDir = os.path.dirname(examPath)
+    examFileName = os.path.basename(examPath)[:-4]
+    runFileName = examPath[:-4] + '_RUN.tex'
     # Get Exam Parameters (get documentclass command)
 
     headerText = ''
@@ -29,7 +30,7 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
 
     restOfFile = ''
 
-    with open(examFileName + '.tex', 'r') as fileIn:
+    with open(examPath + '.tex', 'r') as fileIn:
         for line in fileIn:
             if '\\documentclass' in line:
                 headerText += line
@@ -65,22 +66,22 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
         
         for secNum in secList:
             for versNum in verList:
-                outputName = examFileName[:-4]+'_'+secNum+'_'+versNum
+                outputName = examFileName+'_'+secNum+'_'+versNum
                 variablesString = ''
                 variablesString += '\\renewcommand{\\stuName}{}\n'
                 variablesString+= '\\renewcommand{\\secNum}{'+secNum +'}'
                 verPatt = chr(ord('A') + verList.index(versNum) + secList.index(secNum)*len(verList))
                 variablesString += '\\renewcommand{\\versNum}{'+versNum+'}\\renewcommand{\\versionPattern}{'+verPatt+'}\n'
                 variablesString += '\\toggletrue{showAll}'
-                runFile = open(examFileName[:-4] + '_RUN.tex', 'w')
+                runFile = open(runFileName, 'w')
                 runFile.write(headerText)
                 runFile.write(variablesString)
                 runFile.write(restOfFile)
                 runFile.close()
-                subprocess.check_call(['pdflatex', '-jobname', outputName, examFileName[:-4] + '_RUN.tex'])
-                subprocess.check_call(['pdflatex', '-jobname', outputName, examFileName[:-4] + '_RUN.tex'])
+                subprocess.check_call(['pdflatex', '-jobname', outputName, runFileName])
+                subprocess.check_call(['pdflatex', '-jobname', outputName, runFileName])
 
-                shutil.move(outputName + '.pdf', os.path.join(dir_path, outputFolder, outputName + '.pdf'))
+                shutil.move(outputName + '.pdf', os.path.join(outputFolder, outputName + '.pdf'))
 
 
 
@@ -88,7 +89,7 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
         print('Student Data file not provided.')
         exit()
     else:
-        dataFrame = pd.read_excel(studentDataFile+'.xlsx')
+        dataFrame = pd.read_excel(studentDataFile)
         dataFrame = dataFrame.fillna('')
 
         colTitles = dataFrame.columns
@@ -120,7 +121,7 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
 
         for row in dataFrame.itertuples():
             countN = 0
-            outputName = examFileName[:-4]+'_' + row.Section + '_'+row.StudentName+'_'+row.Version
+            outputName = examFileName+'_' + row.Section + '_'+row.StudentName+'_'+row.Version
             variablesString = ''
             variablesString += '\\renewcommand{\\stuName}{'+row.StudentName+'}\n'
             variablesString+= '\\renewcommand{\\secNum}{'+row.Section +'}'
@@ -134,31 +135,31 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
                     countN += 1
 
 
-            runFile = open(examFileName[:-4] + '_RUN.tex', 'w')
+            runFile = open(runFileName, 'w')
             runFile.write(headerText)
             runFile.write(variablesString)
             runFile.write(restOfFile)
             runFile.close()
-            subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-            subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
+            subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+            subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
             if combinedPDFs:
                 writer_dict[row.Section].append('xxTEMPFILExx.pdf')
                 if countN % 2 == 1:
                     writer_dict[row.Section].add_blank_page()
             if sectionSubfolders:
-                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(dir_path, outputFolder, row.Section, outputName + '.pdf'))    
+                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(outputFolder, row.Section, outputName + '.pdf'))    
             else:
-                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(dir_path, outputFolder, outputName + '.pdf'))
+                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(outputFolder, outputName + '.pdf'))
 
         if combinedPDFs:
             for s in secList:
-                writer_dict[s].write(os.path.join(dir_path, outputFolder, examFileName[:-4]+'_' + s + '_ALL.pdf'))
+                writer_dict[s].write(os.path.join(outputFolder, examFileName+'_' + s + '_ALL.pdf'))
         print('Individualized versions')
 
     if blankFullExam:
         for s in secList:
             for v in verList:
-                outputName = examFileName[:-4]+'_' + s + '_'+ v + '_BLANK'
+                outputName = examFileName+'_' + s + '_'+ v + '_BLANK'
                 variablesString = ''
                 variablesString += '\\renewcommand{\\stuName}{}\n'
                 variablesString+= '\\renewcommand{\\secNum}{'+s +'}'
@@ -167,20 +168,20 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
                 variablesString += "\\toggletrue{showAll}"
 
 
-                runFile = open(examFileName[:-4] + '_RUN.tex', 'w')
+                runFile = open(runFileName, 'w')
                 runFile.write(headerText)
                 runFile.write(variablesString)
                 runFile.write(restOfFile)
                 runFile.close()
-                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
+                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
 
-                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(dir_path, outputFolder, outputName + '.pdf'))
+                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(outputFolder, outputName + '.pdf'))
     
     if makeSolutions:
         for s in secList:
             for v in verList:
-                outputName = examFileName[:-4]+'_' + s + '_'+ v + '_SOLUTIONS'
+                outputName = examFileName+'_' + s + '_'+ v + '_SOLUTIONS'
                 variablesString = ''
                 variablesString += '\\renewcommand{\\stuName}{}\n'
                 variablesString+= '\\renewcommand{\\secNum}{'+s +'}'
@@ -189,37 +190,40 @@ def individualExamGeneration(examFileName, makeIndiv, studentDataFile,numVersion
                 variablesString += "\\toggletrue{showAll}\n\n\\printanswers"
 
 
-                runFile = open(examFileName[:-4] + '_RUN.tex', 'w')
+                runFile = open(runFileName, 'w')
                 runFile.write(headerText)
                 runFile.write(variablesString)
                 runFile.write(restOfFile)
                 runFile.close()
-                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(dir_path, outputFolder, outputName + '.pdf'))
+                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+                subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+                shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(outputFolder, outputName + '.pdf'))
 
-        outputName = examFileName[:-4]+'_ALL_SOLUTIONS'
+        outputName = examFileName+'_ALL_SOLUTIONS'
         variablesString = ''
         variablesString += '\\renewcommand{\\stuName}{}\n'
         variablesString+= '\\renewcommand{\\secNum}{All}'
         variablesString += '\\renewcommand{\\versNum}{All}\\renewcommand{\\versionPattern}{Z}\n'
         variablesString += "\\toggletrue{showAll}\n\n\\printanswers"
 
-        runFile = open(examFileName[:-4] + '_RUN.tex', 'w')
+        runFile = open(runFileName, 'w')
         runFile.write(headerText)
         runFile.write(variablesString)
         runFile.write(restOfFile)
         runFile.close()
-        subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-        subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', examFileName[:-4] + '_RUN.tex'])
-        shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(dir_path, outputFolder, outputName + '.pdf'))
+        subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+        subprocess.check_call(['pdflatex', '-jobname', 'xxTEMPFILExx', runFileName])
+        shutil.move('xxTEMPFILExx' + '.pdf', os.path.join(outputFolder, outputName + '.pdf'))
 
-        if makeScanDirect:
-            for s in secList:
-                for v in verList:
-                    if not os.path.exists(os.path.join(outputFolder, 'Scans_' + s + '_' + v)):
-                        os.mkdir(os.path.join(outputFolder, 'Scans_' + s + '_' + v))
+    if makeScanDirect:
+        for s in secList:
+            for v in verList:
+                if not os.path.exists(os.path.join(outputFolder, 'Scans_' + s + '_' + v)):
+                    os.mkdir(os.path.join(outputFolder, 'Scans_' + s + '_' + v))
 
-    toDelete = [f for f in os.listdir(path=dir_path) if (f.startswith('xxTEMPFILExx') or f.startswith(examFileName[:-4] + '_RUN'))]
+    toDelete = [f for f in os.listdir(path=examDir) if (f.startswith('xxTEMPFILExx') or f.startswith(examFileName + '_RUN'))]
     for f in toDelete:
-        os.remove(f) 
+        os.remove(os.path.join(examDir, f)) 
+    toDelete = [f for f in os.listdir(path=dir_path) if (f.startswith('xxTEMPFILExx') or f.startswith(examFileName + '_RUN'))]
+    for f in toDelete:
+        os.remove(os.path.join(dir_path, f)) 
